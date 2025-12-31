@@ -1,3 +1,3 @@
 git add .
-git commit -m "Update jason"
+git commit -m "Disable routing for PHP functions"
 git push
