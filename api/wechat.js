@@ -1,23 +1,34 @@
-export default function handler(req, res) {
-    try {
-        if (req.method === "POST") {
-            const { id, timestamp, message } = req.body;
+const crypto = require('crypto');
 
-            if (!id || !timestamp || !message) {
-                return res.status(400).json({ error: "Missing required fields" });
-            }
+// 微信服务器验证逻辑
+const verifyWechatServer = (req, res) => {
+    const token = 'S2F2025';
+    const { signature, timestamp, nonce, echostr } = req.query;
 
-            console.log("Received POST:");
-            console.log("ID:", id);
-            console.log("Timestamp:", timestamp);
-            console.log("Message:", message);
+    // 按字典序排序
+    const tmpArr = [token, timestamp, nonce].sort();
+    const tmpStr = tmpArr.join('');
 
-            return res.status(200).json({ success: true, id, timestamp });
-        } else {
-            return res.status(405).json({ error: "Method not allowed" });
-        }
-    } catch (error) {
-        console.error("Error in handler:", error);
-        return res.status(500).json({ error: "Internal Server Error" });
+    // SHA1 加密
+    const hash = crypto.createHash('sha1');
+    hash.update(tmpStr);
+    const hashedStr = hash.digest('hex');
+
+    // 验证 signature
+    if (hashedStr === signature) {
+        res.send(echostr); // 验证成功，返回 echostr
+    } else {
+        res.status(403).send('Forbidden'); // 验证失败
     }
-}
+};
+
+// Express 路由
+const express = require('express');
+const app = express();
+
+app.get('/api/wechat', verifyWechatServer);
+
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+});
