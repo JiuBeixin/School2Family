@@ -1,3 +1,3 @@
 git add .
-git commit -m "log printer"
+git commit -m "normaly update"
 git push
