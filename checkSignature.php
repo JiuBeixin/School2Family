@@ -1,22 +1,29 @@
 <?php
 
-private function checkSignature()
-{
+define('TOKEN', 'S2F2025');
+
+function checkSignature() {
     $signature = $_GET["signature"];
     $timestamp = $_GET["timestamp"];
     $nonce = $_GET["nonce"];
-	
-    $token = S2F2025;
+    
+    $token = TOKEN;
     $tmpArr = array($token, $timestamp, $nonce);
     sort($tmpArr, SORT_STRING);
-    $tmpStr = implode( $tmpArr );
-    $tmpStr = sha1( $tmpStr );
+    $tmpStr = implode($tmpArr);
+    $tmpStr = sha1($tmpStr);
     
-    if( $tmpStr == $signature ){
+    if ($tmpStr == $signature) {
         return true;
-    }else{
+    } else {
         return false;
     }
+}
+
+if (checkSignature()) {
+    echo $_GET['echostr'];
+} else {
+    echo 'Invalid signature';
 }
 
 ?>
