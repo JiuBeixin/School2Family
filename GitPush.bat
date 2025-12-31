@@ -1,3 +1,3 @@
 git add .
-git commit -m "Create new php"
+git commit -m "Update normaly"
 git push
