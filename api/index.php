@@ -1,43 +1,54 @@
 <?php
-// 定义你在微信后台填写的 Token
 define("TOKEN", "S2F2025");
 
-/**
- * 微信接入验证逻辑
- */
+// 1. 依然保留签名验证
 function checkSignature() {
-    // 1. 获取微信加密签名的参数
-    $signature = isset($_GET["signature"]) ? $_GET["signature"] : '';
-    $timestamp = isset($_GET["timestamp"]) ? $_GET["timestamp"] : '';
-    $nonce     = isset($_GET["nonce"])     ? $_GET["nonce"]     : '';
-    $echoStr   = isset($_GET["echostr"])   ? $_GET["echostr"]   : '';
-
-    // 2. 将 token、timestamp、nonce 三个参数进行字典序排序
+    $signature = $_GET["signature"] ?? '';
+    $timestamp = $_GET["timestamp"] ?? '';
+    $nonce     = $_GET["nonce"]     ?? '';
     $tmpArr = array(TOKEN, $timestamp, $nonce);
     sort($tmpArr, SORT_STRING);
+    $tmpStr = sha1(implode($tmpArr));
+    return $tmpStr == $signature;
+}
 
-    // 3. 将三个参数字符串拼接成一个字符串进行 sha1 加密
-    $tmpStr = implode($tmpArr);
-    $tmpStr = sha1($tmpStr);
+if (!checkSignature()) {
+    exit("error");
+}
 
-    // 4. 开发者获得加密后的字符串可与 signature 对比
-    if ($tmpStr == $signature) {
-        // 验证通过，如果是验证请求，则返回 echostr 内容
-        return $echoStr;
-    } else {
-        // 验证失败
-        return false;
+// 2. 如果是 GET 请求，说明是微信在做接入验证
+if ($_SERVER['REQUEST_METHOD'] == 'GET') {
+    echo $_GET["echostr"];
+    exit;
+}
+
+// 3. 如果是 POST 请求，说明微信在推送粉丝消息
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    // 获取微信推送的原始 XML 数据
+    $postStr = file_get_contents("php://input");
+
+    if (!empty($postStr)) {
+        // 解析 XML
+        $postObj = simplexml_load_string($postStr, 'SimpleXMLElement', LIBXML_NOCDATA);
+        $fromUsername = $postObj->FromUserName; // 粉丝的 OpenID
+        $toUsername   = $postObj->ToUserName;   // 你的公众号原始 ID
+        $keyword      = trim($postObj->Content); // 用户发送的内容
+        $time         = time();
+
+        // 准备一个简单的文本回复模板
+        $textTpl = "<xml>
+                      <ToUserName><![CDATA[%s]]></ToUserName>
+                      <FromUserName><![CDATA[%s]]></FromUserName>
+                      <CreateTime>%s</CreateTime>
+                      <MsgType><![CDATA[text]]></MsgType>
+                      <Content><![CDATA[%s]]></Content>
+                    </xml>";
+
+        // 自动回复：你发什么，我回什么（鹦鹉学舌）
+        $contentStr = "你刚才说的是：" . $keyword;
+        $resultStr = sprintf($textTpl, $fromUsername, $toUsername, $time, $contentStr);
+        
+        echo $resultStr;
     }
+    exit;
 }
-
-// 执行验证
-$result = checkSignature();
-
-if ($result) {
-    // 如果是第一次接入验证，微信会发送 echostr
-    // 必须原样输出该字符串，接入才算成功
-    echo $result;
-} else {
-    echo "Verification Failed";
-}
-?>

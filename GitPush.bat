@@ -1,3 +1,3 @@
 git add .
-git commit -m "Disable routing for PHP functions"
+git commit -m "Auto reply feature added"
 git push
