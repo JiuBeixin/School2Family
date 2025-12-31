@@ -1,3 +1,3 @@
 git add .
-git commit -m "Update normaly"
+git commit -m "Update api folder"
 git push
