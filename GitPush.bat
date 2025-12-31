@@ -1,3 +1,3 @@
 git add .
-git commit -m "Auto reply feature added"
+git commit -m "log printer"
 git push
