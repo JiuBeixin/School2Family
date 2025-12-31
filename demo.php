@@ -3,6 +3,8 @@
 define("TOKEN", "S2F2025");
 
 function checkSignature() {
+    var_dump($_GET);
+    
     // 获取微信服务器发送的参数
     $signature = $_GET["signature"];
     $timestamp = $_GET["timestamp"];
