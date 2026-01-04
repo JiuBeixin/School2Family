@@ -1,3 +1,3 @@
 git add .
-git commit -m "normaly update"
+git commit -m "change get echo"
 git push
