@@ -19,13 +19,12 @@ function checkSignature() {
 
 // 只有 GET 请求（微信验证）才强制验证签名
 if ($_SERVER['REQUEST_METHOD'] == 'GET') {
-    // if (checkSignature()) {
-    //     echo $_GET["echostr"];  
+    if (checkSignature()) {
+        echo $_GET["echostr"];  
         
-    // } else {
-    //     echo "Verification Failed";
-    // }
-    echo "Get Get";
+    } else {
+        echo "Verification Failed";
+    }
     exit;
 }
 
